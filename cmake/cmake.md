@@ -32,7 +32,7 @@ Windows平台下生成dll时，设置这个参数， 则动态库中，将导出
 
 为目标设置了`CXX_STANDARD`、`CXX_EXTENSIONS`和`CXX_STANDARD_REQUIRED`属性。还设置了`position_independent ent_code`属性，以避免在使用一些编译器构建DSO时出现问题:
 
-    
+
     ```cmake
     set_target_properties(animals
       PROPERTIES
@@ -70,3 +70,75 @@ _CMake中，列表是用分号分隔的字符串组。列表可以由`list`或`s
 
 ### target_sources用法
 https://blog.csdn.net/guaaaaaaa/article/details/125601766
+
+
+### dll宏
+如果你在另一个CMake项目中使用了这个库，而且没有包含这个库的源代码，只是链接了库文件和包含了头文件，那么`CORE_API`的宏定义仍然存在，但其值取决于库本身的设置和当前项目的配置。
+
+1. 如果库在构建时是用`__declspec(dllexport)`定义的，而你的项目是在Windows上，那么`CORE_API`的值将是`__declspec(dllimport)`，因为Windows下链接动态库时，通常会使用`__declspec(dllimport)`来指示链接器从DLL中导入符号。
+
+2. 如果库在构建时是用`__attribute__((visibility("default")))`定义的，或者你的项目是在非Windows平台上，那么`CORE_API`的值将保持为`__attribute__((visibility("default")))`，因为在这些情况下，通常不需要`__declspec(dllimport)`。
+
+这种自动适应不同平台的宏定义是通过CMake在库的构建过程中设置的，并且会在链接到该库的项目中继续生效，确保链接到库的项目在不同平台上都能正确使用。但请注意，这只有在库的构建配置正确的情况下才有效，库的作者应该确保在构建库时设置了正确的导出宏。
+
+是的，通常情况下，如果你正在开发一个DLL库，并且想让其他项目能够正确导入它，你只需要在你的库中将需要导出的函数或符号声明为`__declspec(dllexport)`（在Windows上）或者使用合适的导出属性（在其他平台上）即可。
+
+其他项目在链接到你的库并调用其中的函数时，默认情况下会自动使用适当的导入宏，不需要在每个使用你的库的项目中手动定义导入宏。这是因为链接器会根据库中的导出声明自动设置导入宏。
+
+例如，在Windows上，如果你的库中有以下导出声明：
+
+```cpp
+__declspec(dllexport) void MyExportedFunction();
+```
+
+其他项目在链接你的库并调用`MyExportedFunction`时，无需手动定义导入宏，链接器会自动将它标记为`__declspec(dllimport)`。
+
+总之，只需在库中进行适当的导出声明，然后其他项目将能够正确导入你的库的函数和符号。在CMake中，你可以按照前面提到的方式来设置这些导出声明，以确保库在不同平台上都能正常工作。
+
+### 字符串转大写
+
+在CMake中，你可以使用`string(TOUPPER)`命令将一个字符串的值转换为大写，并将结果存储在另一个变量中。以下是使用这个命令的示例：
+
+```cmake
+# 定义一个字符串变量
+set(original_string "Hello, World!")
+
+# 使用string(TOUPPER)将原始字符串变为大写并存储在另一个变量中
+string(TOUPPER "${original_string}" uppercase_string)
+
+# 打印结果
+message("Original String: ${original_string}")
+message("Uppercase String: ${uppercase_string}")
+```
+
+在这个示例中，`original_string`包含"Hello, World!"，然后使用`string(TOUPPER)`将其转换为大写并存储在`uppercase_string`变量中。最后，通过`message`命令打印原始字符串和大写字符串的值。
+
+运行上述CMake脚本，你将看到以下输出：
+
+```
+Original String: Hello, World!
+Uppercase String: HELLO, WORLD!
+```
+
+这样，你可以使用`string(TOUPPER)`命令将字符串变量的值转换为大写，并将其用于需要大写字符串的地方。
+
+### CMake中查看一个target的宏定义
+
+要获取一个CMake目标（例如一个库或可执行文件）中包含的宏定义，你可以使用`target_compile_definitions`命令获取目标的编译定义。这将返回与目标关联的宏定义列表。你可以将这些宏定义保存到一个变量中，然后在后续的CMake代码中使用。
+
+以下是一个示例：
+
+```cmake
+# 获取目标的编译定义
+get_target_property(target_definitions YourTargetName COMPILE_DEFINITIONS)
+
+# 将编译定义保存到一个变量中
+set(target_definitions_list ${target_definitions})
+
+# 打印编译定义
+message("Target Definitions: ${target_definitions_list}")
+```
+
+在这个示例中，将`YourTargetName`替换为你的目标的名称。`get_target_property`用于获取目标的编译定义，然后将其保存到一个变量中。最后，使用`message`命令打印出这些编译定义。
+
+这样，你就可以获取目标中包含的宏定义并在CMake中使用它们。

@@ -95,6 +95,56 @@ __declspec(dllexport) void MyExportedFunction();
 
 总之，只需在库中进行适当的导出声明，然后其他项目将能够正确导入你的库的函数和符号。在CMake中，你可以按照前面提到的方式来设置这些导出声明，以确保库在不同平台上都能正常工作。
 
+
+### C++中定义导出宏
+
+```cpp
+/*
+ *  Copyright (c) 2018 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree. An additional intellectual property rights grant can be found
+ *  in the file PATENTS.  All contributing project authors may
+ *  be found in the AUTHORS file in the root of the source tree.
+ */
+
+#ifndef RTC_BASE_SYSTEM_RTC_EXPORT_H_
+#define RTC_BASE_SYSTEM_RTC_EXPORT_H_
+
+// RTC_EXPORT is used to mark symbols as exported or imported when WebRTC is
+// built or used as a shared library.
+// When WebRTC is built as a static library the RTC_EXPORT macro expands to
+// nothing.
+
+#ifdef WEBRTC_ENABLE_SYMBOL_EXPORT
+
+#ifdef WEBRTC_WIN
+
+#ifdef WEBRTC_LIBRARY_IMPL
+#define RTC_EXPORT __declspec(dllexport)
+#else
+#define RTC_EXPORT __declspec(dllimport)
+#endif
+
+#else  // WEBRTC_WIN
+
+#if __has_attribute(visibility) && defined(WEBRTC_LIBRARY_IMPL)
+#define RTC_EXPORT __attribute__((visibility("default")))
+#endif
+
+#endif  // WEBRTC_WIN
+
+#endif  // WEBRTC_ENABLE_SYMBOL_EXPORT
+
+#ifndef RTC_EXPORT
+#define RTC_EXPORT
+#endif
+
+#endif  // RTC_BASE_SYSTEM_RTC_EXPORT_H_
+
+```
+
 ### 字符串转大写
 
 在CMake中，你可以使用`string(TOUPPER)`命令将一个字符串的值转换为大写，并将结果存储在另一个变量中。以下是使用这个命令的示例：

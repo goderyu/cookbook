@@ -47,3 +47,10 @@ ImGuiContext& g = *GImGui;
 ```
 
 因此可以通过将`PlatformImeData`属性暴露到ts侧去访问，实现输入法定位！
+
+
+[web端Composition文档](https://developer.mozilla.org/zh-CN/docs/Web/API/Element/compositionstart_event)
+
+[web端监听输入法](https://cloud.tencent.com/developer/article/2344432)
+
+`window.requestAnimationFrame` 方法，这是浏览器提供的用于动画和定时更新画面的方法，它比传统的 `setTimeout` 或 `setInterval` 更高效，因为它会根据浏览器的实际重绘时间来调度函数执行，从而减少不必要的计算。

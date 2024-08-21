@@ -1,5 +1,4 @@
 cmake_dependent_option可用于option依赖设置
-- [ ] 测试一下是否必须include(CMakeDependentOption)
 
 ### 打印编译器信息
 ```cmake
